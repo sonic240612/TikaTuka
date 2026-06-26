@@ -169,10 +169,29 @@ body {
 
 .game-container {
   width: 100%;
-  max-width: 700px;
+  max-width: 900px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.game-main {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.game-main > .game-board {
+  flex: 1;
+  min-width: 0;
+}
+
+.game-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 200px;
+  max-width: 250px;
 }
 
 .game-header {
@@ -393,8 +412,21 @@ body {
 }
 
 .dice-face {
-  font-size: 3rem;
+  font-size: 2.5rem;
   line-height: 1;
+}
+
+.game-sidebar .dice-face {
+  font-size: 2rem;
+}
+
+.game-sidebar .dice-roller {
+  padding: 12px;
+  gap: 8px;
+}
+
+.game-sidebar .dice-empty {
+  font-size: 2rem;
 }
 
 .dice-type {
@@ -421,39 +453,39 @@ body {
 .action-panel {
   background: #16213e;
   border-radius: 12px;
-  padding: 16px;
+  padding: 12px;
 }
 
 .action-panel h3 {
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   text-align: center;
   color: #e94560;
+  font-size: 0.95rem;
 }
 
 .action-panel h4 {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: #aaa;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .action-buttons {
   display: flex;
-  gap: 24px;
-  justify-content: center;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .action-buttons > div {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .shield-options {
   display: flex;
-  gap: 24px;
-  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .shield-group {
@@ -485,9 +517,14 @@ body {
 
 .reroll-choice {
   display: flex;
-  gap: 16px;
+  flex-direction: column;
+  gap: 8px;
   justify-content: center;
-  margin: 12px 0;
+  margin: 8px 0;
+}
+
+.reroll-choice .btn {
+  white-space: nowrap;
 }
 
 .lane-score {

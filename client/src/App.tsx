@@ -117,51 +117,53 @@ export default function App() {
 
           <div className="game-status">{message}</div>
 
-          <GameBoard
-            gameState={gameState}
-            playerIndex={playerIndex ?? 0}
-            isMyTurn={isMyTurn ?? false}
-            currentRoll={gameState.currentRoll}
-            counterLanes={counterLanes}
-            onPlace={(laneIndex) =>
-              socket?.emit("place_dice", { laneIndex })
-            }
-            onCounter={(laneIndex) =>
-              socket?.emit("counter_dice", { laneIndex })
-            }
-            onPlaceShield={(laneIndex, targetPlayerIndex) =>
-              socket?.emit("place_shield", {
-                laneIndex,
-                targetPlayerIndex,
-              })
-            }
-          />
+          <div className="game-main">
+            <GameBoard
+              gameState={gameState}
+              playerIndex={playerIndex ?? 0}
+              isMyTurn={isMyTurn ?? false}
+              currentRoll={gameState.currentRoll}
+              counterLanes={counterLanes}
+              onPlace={(laneIndex) =>
+                socket?.emit("place_dice", { laneIndex })
+              }
+              onCounter={(laneIndex) =>
+                socket?.emit("counter_dice", { laneIndex })
+              }
+              onPlaceShield={(laneIndex, targetPlayerIndex) =>
+                socket?.emit("place_shield", {
+                  laneIndex,
+                  targetPlayerIndex,
+                })
+              }
+            />
 
-          {gameState.phase !== "game_over" && (
-            <>
-              <DiceRoller
-                dice={gameState.currentRoll}
-                shieldDice={gameState.players[playerIndex ?? 0]?.shieldDice ?? null}
-                canRoll={canRoll}
-                onRoll={() => socket?.emit("roll_dice")}
-                isMyTurn={isMyTurn ?? false}
-                isShieldPhase={gameState.phase === "place_shield"}
-              />
-
-              {showActionPanel && (
-                <ActionPanel
-                  phase={gameState.phase}
-                  currentRoll={gameState.currentRoll}
-                  previousRoll={gameState.previousRoll}
+            {gameState.phase !== "game_over" && (
+              <div className="game-sidebar">
+                <DiceRoller
+                  dice={gameState.currentRoll}
+                  shieldDice={gameState.players[playerIndex ?? 0]?.shieldDice ?? null}
+                  canRoll={canRoll}
+                  onRoll={() => socket?.emit("roll_dice")}
                   isMyTurn={isMyTurn ?? false}
-                  hasReroll={canReroll}
-                  onReroll={() => socket?.emit("reroll_dice")}
-                  onKeepRoll={() => socket?.emit("keep_roll")}
-                  onUsePrevious={() => socket?.emit("use_previous")}
+                  isShieldPhase={gameState.phase === "place_shield"}
                 />
-              )}
-            </>
-          )}
+
+                {showActionPanel && (
+                  <ActionPanel
+                    phase={gameState.phase}
+                    currentRoll={gameState.currentRoll}
+                    previousRoll={gameState.previousRoll}
+                    isMyTurn={isMyTurn ?? false}
+                    hasReroll={canReroll}
+                    onReroll={() => socket?.emit("reroll_dice")}
+                    onKeepRoll={() => socket?.emit("keep_roll")}
+                    onUsePrevious={() => socket?.emit("use_previous")}
+                  />
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

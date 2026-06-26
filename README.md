@@ -42,6 +42,8 @@ Open `http://localhost:5173` in two browser tabs to play against yourself.
 
 ## Game Rules
 
+> 한국어 규칙 문서는 [Tik-a-Tuka_Rules.md](./Tik-a-Tuka_Rules.md)를 참고하세요.
+
 Tik-a-Tuka is a 2-player dice strategy game played on a board of 3 lanes per player.
 
 ### Board

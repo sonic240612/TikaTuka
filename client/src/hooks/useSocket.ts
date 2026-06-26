@@ -7,8 +7,6 @@ import type {
   RoomInfo,
 } from "../../../shared/types.js";
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3001";
-
 interface UseSocketReturn {
   socket: Socket<ServerToClientEvents, ClientToServerEvents> | null;
   connected: boolean;
@@ -19,7 +17,7 @@ interface UseSocketReturn {
   rooms: RoomInfo[];
 }
 
-export function useSocket(): UseSocketReturn {
+export function useSocket(serverUrl: string): UseSocketReturn {
   const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
   const [connected, setConnected] = useState(false);
   const [roomId, setRoomId] = useState<string | null>(null);
@@ -29,7 +27,18 @@ export function useSocket(): UseSocketReturn {
   const [rooms, setRooms] = useState<RoomInfo[]>([]);
 
   useEffect(() => {
-    const socket = io(SERVER_URL, {
+    setConnected(false);
+    setRoomId(null);
+    setPlayerIndex(null);
+    setGameState(null);
+    setError(null);
+    setRooms([]);
+
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+    }
+
+    const socket = io(serverUrl, {
       transports: ["websocket", "polling"],
       autoConnect: true,
     }) as unknown as Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -76,7 +85,7 @@ export function useSocket(): UseSocketReturn {
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [serverUrl]);
 
   return {
     socket: socketRef.current,

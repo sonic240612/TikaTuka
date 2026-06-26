@@ -17,12 +17,12 @@ import type {
 } from "../../shared/types.js";
 
 const PORT = parseInt(process.env.PORT || "3001", 10);
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://localhost:5173";
+const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "*";
 
 const httpServer = createServer();
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
   cors: {
-    origin: CLIENT_ORIGIN,
+    origin: CLIENT_ORIGIN === "*" ? true : CLIENT_ORIGIN.split(","),
     methods: ["GET", "POST"],
   },
   pingInterval: 10000,

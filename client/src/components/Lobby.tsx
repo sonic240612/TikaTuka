@@ -9,15 +9,20 @@ interface LobbyProps {
   socket: Socket<ServerToClientEvents, ClientToServerEvents> | null;
   connected: boolean;
   roomId: string | null;
+  serverUrl: string;
+  onServerUrlChange: (url: string) => void;
 }
 
 export default function Lobby({
   socket,
   connected,
   roomId,
+  serverUrl,
+  onServerUrlChange,
 }: LobbyProps) {
   const [joinCode, setJoinCode] = useState("");
   const [searching, setSearching] = useState(false);
+  const [showConfig, setShowConfig] = useState(false);
 
   useEffect(() => {
     if (!socket) return;
@@ -96,6 +101,24 @@ export default function Lobby({
       {searching && <p className="status search-status">Searching for opponent...</p>}
 
       {!connected && <p className="status">Connecting to server...</p>}
+
+      <div className="server-config">
+        <button className="btn-server-config" onClick={() => setShowConfig(!showConfig)}>
+          {showConfig ? "Hide" : "Server"} Settings
+        </button>
+        {showConfig && (
+          <div className="server-url-row">
+            <input
+              className="input server-input"
+              value={serverUrl}
+              onChange={(e) => onServerUrlChange(e.target.value)}
+              placeholder="http://localhost:3001"
+            />
+            <span className={`status-dot ${connected ? "connected" : "disconnected"}`} />
+            <span className="server-status-text">{connected ? "Connected" : "Disconnected"}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

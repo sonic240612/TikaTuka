@@ -227,9 +227,19 @@ export function handlePlaceDice(
   if (laneIndex < 0 || laneIndex > 2) return { error: "Invalid lane" };
 
   const player = state.players[state.currentPlayerIndex];
+  const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
   const lane = player.board.lanes[laneIndex];
 
   if (isLaneFull(lane)) return { error: "Lane is full" };
+
+  if (state.currentRoll.type === DiceType.NORMAL) {
+    const hasMatch = opponent.board.lanes[laneIndex].slots.some(
+      (s) => s !== null && s.type === DiceType.NORMAL && s.value === state.currentRoll!.value
+    );
+    if (hasMatch) {
+      return { error: "Cannot place here — opponent has a matching dice in this lane. Use counter instead!" };
+    }
+  }
 
   const firstEmpty = lane.slots.indexOf(null);
   lane.slots[firstEmpty] = { ...state.currentRoll };

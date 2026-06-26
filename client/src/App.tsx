@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useSocket } from "./hooks/useSocket.js";
 import Lobby from "./components/Lobby.js";
 import GameBoard from "./components/GameBoard.js";
@@ -7,6 +7,10 @@ import ActionPanel from "./components/ActionPanel.js";
 import "./App.css";
 
 export default function App() {
+  const [serverUrl, setServerUrl] = useState(
+    () => localStorage.getItem("serverUrl") || import.meta.env.VITE_SERVER_URL || "http://localhost:3001"
+  );
+
   const {
     socket,
     connected,
@@ -15,7 +19,12 @@ export default function App() {
     gameState,
     error,
     rooms,
-  } = useSocket();
+  } = useSocket(serverUrl);
+
+  function handleServerUrlChange(url: string) {
+    localStorage.setItem("serverUrl", url);
+    setServerUrl(url);
+  }
 
   const isMyTurn =
     gameState !== null &&
@@ -90,6 +99,8 @@ export default function App() {
         socket={socket}
         connected={connected}
         roomId={roomId}
+        serverUrl={serverUrl}
+        onServerUrlChange={handleServerUrlChange}
       />
 
       {roomId && !gameState && (

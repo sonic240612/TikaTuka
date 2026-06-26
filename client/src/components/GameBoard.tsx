@@ -1,5 +1,6 @@
 import type { GameState, Lane, Slot, Dice, LaneScore } from "../../../shared/types.js";
 import { calculateBoardScores, totalScore, calculateLaneScore } from "../../../shared/types.js";
+import DiceFace from './DiceFace';
 
 interface GameBoardProps {
   gameState: GameState;
@@ -14,20 +15,9 @@ interface GameBoardProps {
 
 function DiceSlot({ slot }: { slot: Slot }) {
   if (!slot) return <div className="slot empty" />;
-
-  const diceFaces: Record<number, string> = {
-    1: "⚀",
-    2: "⚁",
-    3: "⚂",
-    4: "⚃",
-    5: "⚄",
-    6: "⚅",
-  };
-
   return (
     <div className={`slot ${slot.type}`}>
-      <span className="slot-face">{diceFaces[slot.value]}</span>
-      <span className="slot-value">{slot.value}</span>
+      <DiceFace value={slot.value} size={44} type={slot.type} />
     </div>
   );
 }
@@ -95,7 +85,9 @@ export default function GameBoard({
 
   function canPlaceHere(laneIdx: number): boolean {
     if (!isAction) return false;
-    return me.board.lanes[laneIdx].slots.some((s) => s === null);
+    if (!me.board.lanes[laneIdx].slots.some((s) => s === null)) return false;
+    if (currentRoll?.type === "normal" && counterLanes.includes(laneIdx)) return false;
+    return true;
   }
 
   function canCounterHere(laneIdx: number): boolean {
@@ -138,7 +130,7 @@ export default function GameBoard({
       {isAction && (
         <div className="phase-hint">
           {currentRoll?.type === "normal"
-            ? "Click your empty slot to place, or opponent's matching lane to counter"
+            ? "Place in a non-matching lane, or counter in a matching lane"
             : "Click an empty slot on your board to place"}
         </div>
       )}

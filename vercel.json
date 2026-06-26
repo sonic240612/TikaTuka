@@ -1,0 +1,14 @@
+{
+  "framework": "vite",
+  "buildCommand": "cd client && npm run build",
+  "outputDirectory": "client/dist",
+  "experimentalServices": {
+    "tikatuka-client": {
+      "type": "web",
+      "root": "client",
+      "routePrefix": "/",
+      "framework": "vite",
+      "buildCommand": "npm install && npm run build"
+    }
+  }
+}

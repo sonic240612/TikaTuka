@@ -1,4 +1,5 @@
 import type { Dice } from "../../../shared/types.js";
+import DiceFace from './DiceFace';
 
 interface ActionPanelProps {
   currentRoll: Dice | null;
@@ -10,10 +11,6 @@ interface ActionPanelProps {
   onKeepRoll: () => void;
   onUsePrevious: () => void;
 }
-
-const diceFaces: Record<number, string> = {
-  1: "⚀", 2: "⚁", 3: "⚂", 4: "⚃", 5: "⚄", 6: "⚅",
-};
 
 export default function ActionPanel({
   currentRoll,
@@ -32,13 +29,13 @@ export default function ActionPanel({
       <div className="action-panel">
         <h3>Choose a Dice Value</h3>
         <div className="reroll-choice">
-          <button className="btn btn-secondary" onClick={onUsePrevious}>
-            <span className="dice-face">{diceFaces[previousRoll.value]}</span>
-            {" "}Old: {previousRoll.value}
+          <button className="btn btn-secondary reroll-btn" onClick={onUsePrevious}>
+            <DiceFace value={previousRoll.value} size={40} type={previousRoll.type} />
+            <span>Old: {previousRoll.value}</span>
           </button>
-          <button className="btn btn-primary" onClick={onKeepRoll}>
-            <span className="dice-face">{diceFaces[currentRoll.value]}</span>
-            {" "}New: {currentRoll.value}
+          <button className="btn btn-primary reroll-btn" onClick={onKeepRoll}>
+            <DiceFace value={currentRoll.value} size={40} type={currentRoll.type} />
+            <span>New: {currentRoll.value}</span>
           </button>
         </div>
       </div>

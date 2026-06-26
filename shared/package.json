@@ -1,0 +1,7 @@
+{
+  "name": "@tik-a-tuka/shared",
+  "private": true,
+  "type": "module",
+  "main": "types.js",
+  "types": "types.ts"
+}

@@ -1,0 +1,27 @@
+app = "tikatuka-server"
+
+[build]
+
+[env]
+  CLIENT_ORIGIN = "https://tikatuka-client.vercel.app"
+
+[[services]]
+  http_checks = []
+  internal_port = 3001
+  protocol = "tcp"
+  script_checks = []
+
+  [[services.ports]]
+    handlers = ["http"]
+    port = 80
+    force_https = true
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+
+  [[services.tcp_checks]]
+    grace_period = "10s"
+    interval = "30s"
+    restart_limit = 0
+    timeout = "5s"

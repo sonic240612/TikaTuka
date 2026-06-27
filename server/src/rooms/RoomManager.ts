@@ -17,7 +17,7 @@ interface PendingPlayer {
 
 interface Room {
   id: string;
-  gameState: GameState;
+  gameState: GameState | null;
   playerSockets: string[];
 }
 
@@ -33,7 +33,7 @@ export class RoomManager {
 
     const room: Room = {
       id: roomId,
-      gameState: null as unknown as GameState,
+      gameState: null,
       playerSockets: [playerSocketId],
     };
     this.rooms.set(roomId, room);
@@ -122,7 +122,7 @@ export class RoomManager {
     const room = this.rooms.get(roomId);
     if (!room || !room.gameState) return { error: "Room not found" };
 
-    const clonedState = JSON.parse(JSON.stringify(room.gameState));
+    const clonedState = structuredClone(room.gameState);
     const result = action(clonedState);
 
     if (result.state) {

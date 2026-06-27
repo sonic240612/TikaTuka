@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import { createServer } from "http";
 import { RoomManager } from "./rooms/RoomManager.js";
+import { RateLimiter } from "./utils/RateLimiter.js";
 import {
   handleRoll,
   handleReroll,
@@ -14,7 +15,9 @@ import {
 import type {
   ClientToServerEvents,
   ServerToClientEvents,
+  GameState,
 } from "../../shared/types.js";
+import type { ActionResult } from "./game/GameEngine.js";
 
 const PORT = parseInt(process.env.PORT || "3001", 10);
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "*";
@@ -30,6 +33,9 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
 });
 
 const roomManager = new RoomManager();
+const rateLimiter = new RateLimiter(10, 1000);
+
+setInterval(() => rateLimiter.sweep(), 30_000);
 
 io.on("connection", (socket) => {
   console.log(`[connect] ${socket.id}`);
@@ -66,12 +72,12 @@ io.on("connection", (socket) => {
     socket.emit("joined", {
       roomId,
       playerIndex,
-      gameState: room.gameState,
+      gameState: room.gameState!,
     });
 
     socket.to(roomId).emit("opponent_joined", {
       roomId,
-      gameState: room.gameState,
+      gameState: room.gameState!,
     });
 
     emitRoomList();
@@ -123,8 +129,13 @@ io.on("connection", (socket) => {
   });
 
   function requireGameAction(
-    cb: (state: any) => { state?: any; error?: string }
+    cb: (state: GameState) => ActionResult
   ) {
+    if (!rateLimiter.isAllowed(socket.id)) {
+      socket.emit("error", { message: "Too many requests. Slow down." });
+      return;
+    }
+
     const room = roomManager.getRoomByPlayer(socket.id);
     if (!room || !room.gameState) {
       socket.emit("error", { message: "Not in a game" });

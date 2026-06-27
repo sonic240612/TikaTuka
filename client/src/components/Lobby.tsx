@@ -29,22 +29,27 @@ export default function Lobby({
 }: LobbyProps) {
   const [joinCode, setJoinCode] = useState("");
   const [searching, setSearching] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [joining, setJoining] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
 
   useEffect(() => {
     if (!socket) return;
-    const onMatchFound = () => setSearching(false);
+    const onMatchFound = () => { setSearching(false); setCreating(false); setJoining(false); };
     const onCancelled = () => setSearching(false);
+    const onJoined = () => { setCreating(false); setJoining(false); };
     socket.on("match_found", onMatchFound);
     socket.on("match_cancelled", onCancelled);
+    socket.on("joined", onJoined);
     return () => {
       socket.off("match_found", onMatchFound);
       socket.off("match_cancelled", onCancelled);
+      socket.off("joined", onJoined);
     };
   }, [socket]);
 
   useEffect(() => {
-    if (roomId) setSearching(false);
+    if (roomId) { setSearching(false); setCreating(false); setJoining(false); }
   }, [roomId]);
 
   if (roomId) return null;
@@ -55,13 +60,16 @@ export default function Lobby({
       <p className="subtitle">1:1 Dice Battle Game</p>
 
       <div className="lobby-buttons">
-        <button
-          className="btn btn-primary"
-          disabled={!connected}
-          onClick={() => socket?.emit("create_room")}
-        >
-          Create Room
-        </button>
+          <button
+            className="btn btn-primary"
+            disabled={!connected || creating}
+            onClick={() => {
+              setCreating(true);
+              socket?.emit("create_room");
+            }}
+          >
+            {creating ? "Creating..." : "Create Room"}
+          </button>
 
         <div className="join-row">
           <input
@@ -73,12 +81,13 @@ export default function Lobby({
           />
           <button
             className="btn btn-secondary"
-            disabled={!connected || joinCode.length !== 6 || searching}
+            disabled={!connected || joinCode.length !== 6 || searching || joining}
             onClick={() => {
+              setJoining(true);
               socket?.emit("join_room", { roomId: joinCode });
             }}
           >
-            Join
+            {joining ? "Joining..." : "Join"}
           </button>
         </div>
 

@@ -203,6 +203,7 @@ export function handleKeepRoll(state: GameState, playerId: string): ActionResult
     return handlePass(state, playerId);
   }
 
+  state.previousRoll = null;
   state.phase = GamePhase.ACTION;
   state.message = `Keeping value: ${state.currentRoll.value}`;
   return { state };

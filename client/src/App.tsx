@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { useSocket } from "./hooks/useSocket.js";
 import Lobby from "./components/Lobby.js";
 import GameBoard from "./components/GameBoard.js";
@@ -75,6 +75,30 @@ export default function App() {
   }, [gameState, playerIndex]);
 
   const message = gameState?.message ?? "";
+  const [delayedMessage, setDelayedMessage] = useState("");
+  const prevPhaseRef = useRef("");
+
+  useEffect(() => {
+    if (!gameState) {
+      prevPhaseRef.current = "";
+      setDelayedMessage("");
+      return;
+    }
+
+    const prevPhase = prevPhaseRef.current;
+    const newPhase = gameState.phase;
+
+    if (prevPhase === "roll" && newPhase === "action") {
+      setDelayedMessage("");
+      const timer = setTimeout(() => setDelayedMessage(gameState.message), 800);
+      prevPhaseRef.current = newPhase;
+      return () => clearTimeout(timer);
+    }
+
+    prevPhaseRef.current = newPhase;
+    setDelayedMessage(gameState.message);
+  }, [gameState]);
+
   const showRerollChoice =
     gameState?.phase === "reroll_choice";
   const showRerollButton =
@@ -123,7 +147,7 @@ export default function App() {
 
           {error && <div className="error-toast">{error}</div>}
 
-          <div className="game-status">{message}</div>
+          <div className="game-status">{delayedMessage}</div>
 
           <div className="game-main">
             <GameBoard

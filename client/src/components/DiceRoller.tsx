@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Dice } from "../../../shared/types.js";
 import DiceFace from './DiceFace';
 
@@ -21,6 +21,7 @@ export default function DiceRoller({
 }: DiceRollerProps) {
   const [rolling, setRolling] = useState(false);
   const [rollingValue, setRollingValue] = useState(1);
+  const prevDiceRef = useRef<Dice | null>(null);
 
   const displayDice = dice ?? shieldDice;
 
@@ -28,6 +29,13 @@ export default function DiceRoller({
     setRolling(true);
     onRoll();
   }
+
+  useEffect(() => {
+    if (!isMyTurn && !rolling && dice !== null && prevDiceRef.current === null) {
+      setRolling(true);
+    }
+    prevDiceRef.current = dice;
+  }, [dice, isMyTurn, rolling]);
 
   useEffect(() => {
     if (!rolling) return;

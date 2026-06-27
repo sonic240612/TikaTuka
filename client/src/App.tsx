@@ -80,6 +80,11 @@ export default function App() {
   const showRerollButton =
     gameState?.phase === "action" && isMyTurn && canReroll;
 
+  const pendingShieldDice = useMemo(() => {
+    if (!gameState) return null;
+    return gameState.players[0]?.shieldDice ?? gameState.players[1]?.shieldDice ?? null;
+  }, [gameState]);
+
   const showActionPanel = showRerollChoice || showRerollButton;
 
   return (
@@ -145,7 +150,7 @@ export default function App() {
               <div className="game-sidebar">
                 <DiceRoller
                   dice={gameState.currentRoll}
-                  shieldDice={gameState.players[playerIndex ?? 0]?.shieldDice ?? null}
+                  shieldDice={pendingShieldDice}
                   canRoll={canRoll}
                   onRoll={() => socket?.emit("roll_dice")}
                   isMyTurn={isMyTurn ?? false}

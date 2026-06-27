@@ -22,7 +22,12 @@ import type { ActionResult } from "./game/GameEngine.js";
 const PORT = parseInt(process.env.PORT || "3001", 10);
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "*";
 
-const httpServer = createServer();
+const httpServer = createServer((req, res) => {
+  if (req.url === "/health" && req.method === "GET") {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("ok");
+  }
+});
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
   cors: {
     origin: CLIENT_ORIGIN === "*" ? true : CLIENT_ORIGIN.split(","),

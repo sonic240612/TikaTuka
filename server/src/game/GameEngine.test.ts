@@ -199,7 +199,7 @@ describe("handleCounter", () => {
 
     const result = handleCounter(state, P0, 0);
     expect(result.state).toBeDefined();
-    expect(result.state!.players[1].board.lanes[0].slots[0]).toBeNull();
+    expect(result.state!.players[1].board.lanes[0].slots[0]).toEqual({ type: DiceType.NORMAL, value: 3 });
     expect(result.state!.players[1].board.lanes[0].slots[1]).toBeNull();
     expect(result.state!.players[0].shieldDice).not.toBeNull();
     expect(result.state!.players[0].shieldDice!.type).toBe(DiceType.SHIELD);

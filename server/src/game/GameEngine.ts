@@ -53,12 +53,19 @@ function applyCounter(
   diceValue: number
 ): void {
   const lane = opponent.board.lanes[laneIndex];
-  lane.slots = lane.slots.map((s) => {
-    if (s !== null && s.type === DiceType.NORMAL && s.value === diceValue) {
-      return null;
+  let removed = false;
+  const remaining = lane.slots.filter((s) => {
+    if (!removed && s !== null && s.type === DiceType.NORMAL && s.value === diceValue) {
+      removed = true;
+      return false;
     }
-    return s;
-  }) as [Slot, Slot, Slot];
+    return true;
+  });
+  const result: [Slot, Slot, Slot] = [null, null, null];
+  for (let i = 0; i < remaining.length && i < 3; i++) {
+    result[i] = remaining[i];
+  }
+  lane.slots = result;
 }
 
 function calculateFinalScores(

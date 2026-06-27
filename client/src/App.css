@@ -1226,4 +1226,33 @@ body {
   }
 }
 
+/* Counter animation - flying dice */
+
+.flying-dice {
+  position: fixed;
+  z-index: 50;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.flying-dice .dice-face {
+  box-shadow: 0 0 20px rgba(233, 69, 96, 0.6), 0 0 60px rgba(233, 69, 96, 0.2);
+  border: 2px solid var(--accent);
+}
+
+.hit-effect {
+  position: fixed;
+  z-index: 49;
+  pointer-events: none;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(233, 69, 96, 0.6), transparent);
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.1s ease-out, opacity 0.1s ease-out;
+  margin-left: -4px;
+  margin-top: -4px;
+}
+
 

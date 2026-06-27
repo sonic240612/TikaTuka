@@ -245,7 +245,7 @@ io.on("connection", (socket) => {
       return;
     }
 
-    clearTurnTimer(room.id);
+    const prevPlayerIndex = room.gameState.currentPlayerIndex;
 
     const result = roomManager.processAction(room.id, (state) =>
       cb(state)
@@ -259,13 +259,14 @@ io.on("connection", (socket) => {
     if (result.state) {
       emitGameState(room.id, result.state);
       if (result.state.phase === "game_over" && result.state.winner !== null) {
+        clearTurnTimer(room.id);
         setTimeout(() => {
           io.to(room.id).emit("game_over", {
             winner: result.state.winner!,
             gameState: result.state,
           });
         }, 500);
-      } else {
+      } else if (result.state.currentPlayerIndex !== prevPlayerIndex) {
         startTurnTimer(room.id);
       }
     }

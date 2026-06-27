@@ -10,7 +10,7 @@ services:
     healthCheckPath: /health
     envVars:
       - key: CLIENT_ORIGIN
-        value: https://tikatuka-client.onrender.com
+        value: https://tikatuka-one.vercel.app
       - key: PORT
         value: 3001
 

@@ -51,7 +51,6 @@ export interface GameState {
   totalScores: [number | null, number | null];
   laneWins: [number, number];
   rerollUsed: [boolean, boolean];
-  isFirstTurn: boolean;
   turnCount: number;
   message: string;
 }
@@ -62,7 +61,7 @@ export interface RoomInfo {
 }
 
 export interface ServerToClientEvents {
-  joined: (data: { roomId: string; playerIndex: number; gameState: GameState }) => void;
+  joined: (data: { roomId: string; playerIndex: number; gameState: GameState | null }) => void;
   opponent_joined: (data: { roomId: string; gameState: GameState }) => void;
   game_state: (data: { gameState: GameState }) => void;
   game_over: (data: { winner: number; gameState: GameState }) => void;
@@ -84,6 +83,7 @@ export interface ClientToServerEvents {
   place_dice: (data: { laneIndex: number }) => void;
   counter_dice: (data: { laneIndex: number }) => void;
   place_shield: (data: { laneIndex: number; targetPlayerIndex: number }) => void;
+  pass: () => void;
 }
 
 export function createEmptyBoard(): PlayerBoard {

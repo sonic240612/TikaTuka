@@ -34,14 +34,21 @@ const roomManager = new RoomManager();
 io.on("connection", (socket) => {
   console.log(`[connect] ${socket.id}`);
 
+  function emitRoomList() {
+    socket.emit("room_list", { rooms: roomManager.getRoomList() });
+  }
+
+  emitRoomList();
+
   socket.on("create_room", () => {
     const roomId = roomManager.createRoom(socket.id);
     socket.join(roomId);
     socket.emit("joined", {
       roomId,
       playerIndex: 0,
-      gameState: null as any,
+      gameState: null,
     });
+    emitRoomList();
     console.log(`[create_room] ${socket.id} -> ${roomId}`);
   });
 
@@ -67,6 +74,8 @@ io.on("connection", (socket) => {
       gameState: room.gameState,
     });
 
+    emitRoomList();
+
     console.log(`[join_room] ${socket.id} -> ${roomId} as player ${playerIndex}`);
   });
 
@@ -82,7 +91,7 @@ io.on("connection", (socket) => {
       socket.emit("joined", {
         roomId: result.roomId,
         playerIndex: result.playerIndex,
-        gameState: null as any,
+        gameState: null,
       });
       console.log(`[join_random] ${socket.id} -> room ${result.roomId} (waiting, P${result.playerIndex + 1})`);
       return;
@@ -178,6 +187,10 @@ io.on("connection", (socket) => {
     requireGameAction((state) =>
       handlePlaceShield(state, socket.id, laneIndex, targetPlayerIndex)
     );
+  });
+
+  socket.on("pass", () => {
+    requireGameAction((state) => handlePass(state, socket.id));
   });
 
   socket.on("disconnect", () => {

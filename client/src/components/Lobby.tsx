@@ -3,6 +3,7 @@ import type { Socket } from "socket.io-client";
 import type {
   ClientToServerEvents,
   ServerToClientEvents,
+  RoomInfo,
 } from "../../../shared/types.js";
 
 interface LobbyProps {
@@ -11,6 +12,9 @@ interface LobbyProps {
   roomId: string | null;
   serverUrl: string;
   onServerUrlChange: (url: string) => void;
+  availableRooms: RoomInfo[];
+  showRoomList: boolean;
+  onToggleRoomList: () => void;
 }
 
 export default function Lobby({
@@ -19,6 +23,9 @@ export default function Lobby({
   roomId,
   serverUrl,
   onServerUrlChange,
+  availableRooms,
+  showRoomList,
+  onToggleRoomList,
 }: LobbyProps) {
   const [joinCode, setJoinCode] = useState("");
   const [searching, setSearching] = useState(false);
@@ -101,6 +108,32 @@ export default function Lobby({
       {searching && <p className="status search-status">Searching for opponent...</p>}
 
       {!connected && <p className="status">Connecting to server...</p>}
+
+      {availableRooms.length > 0 && (
+        <div className="room-list-section">
+          <button
+            className="btn btn-small btn-ghost"
+            onClick={onToggleRoomList}
+          >
+            {showRoomList ? "Hide" : "Show"} Available Rooms ({availableRooms.length})
+          </button>
+          {showRoomList && (
+            <div className="room-list">
+              {availableRooms.map((r) => (
+                <div key={r.roomId} className="room-item">
+                  <span>Room: {r.roomId}</span>
+                  <button
+                    className="btn btn-small"
+                    onClick={() => socket?.emit("join_room", { roomId: r.roomId })}
+                  >
+                    Join
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="server-config">
         <button className="btn-server-config" onClick={() => setShowConfig(!showConfig)}>

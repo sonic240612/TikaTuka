@@ -146,7 +146,6 @@ export function createInitialGameState(
     totalScores: [null, null],
     laneWins: [0, 0],
     rerollUsed: [false, false],
-    isFirstTurn: true,
     turnCount: 0,
     message: "Player 1's turn. Roll the dice!",
   };
@@ -160,6 +159,10 @@ export function handleRoll(state: GameState, playerId: string): ActionResult {
   if (state.phase !== GamePhase.ROLL) return { error: "Not your turn to roll" };
   if (state.players[state.currentPlayerIndex].id !== playerId)
     return { error: "Not your turn" };
+
+  if (isBoardFull(state.players[state.currentPlayerIndex].board)) {
+    return handlePass(state, playerId);
+  }
 
   const dice = rollDice(DiceType.NORMAL);
 
@@ -194,6 +197,12 @@ export function handleKeepRoll(state: GameState, playerId: string): ActionResult
   if (!state.currentRoll || !state.previousRoll)
     return { error: "No dice to choose from" };
 
+  if (isBoardFull(state.players[state.currentPlayerIndex].board)) {
+    state.currentRoll = null;
+    state.previousRoll = null;
+    return handlePass(state, playerId);
+  }
+
   state.phase = GamePhase.ACTION;
   state.message = `Keeping value: ${state.currentRoll.value}`;
   return { state };
@@ -209,6 +218,12 @@ export function handleUsePrevious(state: GameState, playerId: string): ActionRes
 
   state.currentRoll = state.previousRoll;
   state.previousRoll = null;
+
+  if (isBoardFull(state.players[state.currentPlayerIndex].board)) {
+    state.currentRoll = null;
+    return handlePass(state, playerId);
+  }
+
   state.phase = GamePhase.ACTION;
   state.message = `Keeping old value: ${state.currentRoll.value}`;
   return { state };
@@ -245,7 +260,6 @@ export function handlePlaceDice(
   lane.slots[firstEmpty] = { ...state.currentRoll };
 
   state.currentRoll = null;
-  state.isFirstTurn = false;
   state.turnCount++;
 
   if (player.shieldDice) {
@@ -310,7 +324,6 @@ export function handleCounter(
   player.shieldDice = shieldReward;
 
   state.currentRoll = null;
-  state.isFirstTurn = false;
   state.phase = GamePhase.PLACE_SHIELD;
   state.message = `Counter successful! You got a shield dice (${shieldReward.value}). Place it now!`;
   return { state };
@@ -343,7 +356,6 @@ export function handlePlaceShield(
   player.shieldDice = null;
 
   state.turnCount++;
-  state.isFirstTurn = false;
 
   const opponentIdx = state.currentPlayerIndex === 0 ? 1 : 0;
   if (isBoardFull(state.players[opponentIdx].board)) {

@@ -10,6 +10,7 @@ export default function App() {
   const [serverUrl, setServerUrl] = useState(
     () => localStorage.getItem("serverUrl") || import.meta.env.VITE_SERVER_URL || "http://localhost:3001"
   );
+  const [showRoomList, setShowRoomList] = useState(false);
 
   const {
     socket,
@@ -20,6 +21,11 @@ export default function App() {
     error,
     rooms,
   } = useSocket(serverUrl);
+
+  const availableRooms = useMemo(
+    () => rooms.filter((r) => r.roomId !== roomId),
+    [rooms, roomId]
+  );
 
   function handleServerUrlChange(url: string) {
     localStorage.setItem("serverUrl", url);
@@ -78,29 +84,15 @@ export default function App() {
 
   return (
     <div className="app">
-      {rooms.length > 0 && (
-        <div className="room-list">
-          <h3>Available Rooms</h3>
-          {rooms.map((r) => (
-            <div key={r.roomId} className="room-item">
-              <span>Room: {r.roomId}</span>
-              <button
-                className="btn btn-small"
-                onClick={() => socket?.emit("join_room", { roomId: r.roomId })}
-              >
-                Join
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
       <Lobby
         socket={socket}
         connected={connected}
         roomId={roomId}
         serverUrl={serverUrl}
         onServerUrlChange={handleServerUrlChange}
+        availableRooms={availableRooms}
+        showRoomList={showRoomList}
+        onToggleRoomList={() => setShowRoomList((v) => !v)}
       />
 
       {roomId && !gameState && (
@@ -172,6 +164,7 @@ export default function App() {
                     onUsePrevious={() => socket?.emit("use_previous")}
                   />
                 )}
+
               </div>
             )}
           </div>

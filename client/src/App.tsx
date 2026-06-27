@@ -4,6 +4,7 @@ import Lobby from "./components/Lobby.js";
 import GameBoard from "./components/GameBoard.js";
 import DiceRoller from "./components/DiceRoller.js";
 import ActionPanel from "./components/ActionPanel.js";
+import TurnTimer from "./components/TurnTimer.js";
 import "./App.css";
 
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
     gameState,
     error,
     rooms,
+    timer,
   } = useSocket(serverUrl);
 
   const availableRooms = useMemo(
@@ -146,6 +148,15 @@ export default function App() {
           </div>
 
           {error && <div className="error-toast">{error}</div>}
+
+          <TurnTimer
+            turnTimeLeft={timer.turnTimeLeft}
+            reserveTime={timer.reserveTime}
+            overtime={timer.overtime}
+            currentPlayerIndex={gameState.currentPlayerIndex}
+            playerIndex={playerIndex ?? 0}
+            phase={gameState.phase}
+          />
 
           <div className="game-status">{delayedMessage}</div>
 

@@ -19,6 +19,7 @@ interface Room {
   id: string;
   gameState: GameState | null;
   playerSockets: string[];
+  reserveTime: [number, number];
 }
 
 export class RoomManager {
@@ -35,6 +36,7 @@ export class RoomManager {
       id: roomId,
       gameState: null,
       playerSockets: [playerSocketId],
+      reserveTime: [60, 60],
     };
     this.rooms.set(roomId, room);
     return roomId;
@@ -130,6 +132,19 @@ export class RoomManager {
     }
 
     return result;
+  }
+
+  deductReserveTime(roomId: string, playerIndex: number, seconds: number): boolean {
+    const room = this.rooms.get(roomId);
+    if (!room || !room.gameState) return false;
+    room.reserveTime[playerIndex] = Math.max(0, room.reserveTime[playerIndex] - seconds);
+    return room.reserveTime[playerIndex] <= 0;
+  }
+
+  getReserveTime(roomId: string): [number, number] | null {
+    const room = this.rooms.get(roomId);
+    if (!room) return null;
+    return room.reserveTime;
   }
 
   removePlayer(socketId: string): void {

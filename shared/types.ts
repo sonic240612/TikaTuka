@@ -60,15 +60,22 @@ export interface RoomInfo {
   playerCount: number;
 }
 
+export interface TimerState {
+  turnTimeLeft: number;
+  reserveTime: [number, number];
+  overtime: boolean;
+}
+
 export interface ServerToClientEvents {
   joined: (data: { roomId: string; playerIndex: number; gameState: GameState | null }) => void;
   opponent_joined: (data: { roomId: string; gameState: GameState }) => void;
-  game_state: (data: { gameState: GameState }) => void;
+  game_state: (data: { gameState: GameState; timer: TimerState }) => void;
   game_over: (data: { winner: number; gameState: GameState }) => void;
   error: (data: { message: string }) => void;
   room_list: (data: { rooms: RoomInfo[] }) => void;
   match_found: (data: { roomId: string; playerIndex: number; gameState: GameState }) => void;
   match_cancelled: () => void;
+  timer_update: (data: TimerState) => void;
 }
 
 export interface ClientToServerEvents {

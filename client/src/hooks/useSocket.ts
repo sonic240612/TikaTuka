@@ -5,6 +5,7 @@ import type {
   ServerToClientEvents,
   GameState,
   RoomInfo,
+  TimerState,
 } from "../../../shared/types.js";
 
 interface UseSocketReturn {
@@ -15,6 +16,7 @@ interface UseSocketReturn {
   gameState: GameState | null;
   error: string | null;
   rooms: RoomInfo[];
+  timer: TimerState;
 }
 
 export function useSocket(serverUrl: string): UseSocketReturn {
@@ -25,6 +27,7 @@ export function useSocket(serverUrl: string): UseSocketReturn {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [rooms, setRooms] = useState<RoomInfo[]>([]);
+  const [timer, setTimer] = useState<TimerState>({ turnTimeLeft: 15, reserveTime: [60, 60], overtime: false });
 
   useEffect(() => {
     setConnected(false);
@@ -68,6 +71,11 @@ export function useSocket(serverUrl: string): UseSocketReturn {
 
     socket.on("game_state", (data) => {
       setGameState(data.gameState);
+      setTimer(data.timer);
+    });
+
+    socket.on("timer_update", (data) => {
+      setTimer(data);
     });
 
     socket.on("game_over", (data) => {
@@ -95,5 +103,6 @@ export function useSocket(serverUrl: string): UseSocketReturn {
     gameState,
     error,
     rooms,
+    timer,
   };
 }

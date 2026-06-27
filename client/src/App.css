@@ -1009,4 +1009,221 @@ body {
   color: var(--shield-color);
 }
 
+/* Mobile responsive breakpoints */
+
+@media (max-width: 640px) {
+  .game-main {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .game-main > .game-board {
+    width: 100%;
+  }
+
+  .game-sidebar {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .game-sidebar .dice-roller {
+    flex-direction: row;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .game-sidebar .dice-empty {
+    width: 56px;
+    height: 56px;
+    font-size: 2rem;
+  }
+
+  .game-sidebar .dice-result .dice-face {
+    width: 56px !important;
+    height: 56px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .app {
+    padding: 12px;
+  }
+
+  .lobby {
+    padding-top: 40px;
+    gap: 20px;
+  }
+
+  .lobby-buttons {
+    width: 100%;
+  }
+
+  .server-config {
+    width: 100%;
+  }
+
+  .title {
+    font-size: 2.2rem;
+  }
+
+  .game-board {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .lane {
+    min-width: 72px;
+    padding: 8px 10px;
+  }
+
+  .lane-slots {
+    gap: 6px;
+  }
+
+  .slot {
+    width: 52px;
+    height: 52px;
+  }
+
+  .slot .dice-face {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .player-section h2 {
+    font-size: 0.85rem;
+  }
+
+  .turn-timer-container {
+    gap: 8px;
+  }
+
+  .timer-reserve-bar {
+    min-width: 70px;
+  }
+
+  .timer-reserve-label {
+    min-width: 36px;
+    font-size: 0.6rem;
+  }
+
+  .timer-reserve-value {
+    min-width: 24px;
+    font-size: 0.65rem;
+  }
+
+  .timer-circle {
+    width: 52px;
+    height: 52px;
+  }
+
+  .timer-number {
+    font-size: 1.1rem;
+  }
+
+  .dice-off-modal {
+    padding: 32px 24px;
+    margin: 0 12px;
+  }
+
+  .dice-off-dice {
+    transform: scale(0.75);
+  }
+
+  .dice-off-players {
+    gap: 16px;
+  }
+
+  .dice-off-title {
+    font-size: 1.5rem;
+  }
+
+  .btn-small {
+    padding: 12px 18px;
+  }
+
+  .btn-ghost {
+    padding: 12px 18px;
+  }
+
+  .game-over-banner {
+    font-size: 1.5rem;
+    padding: 14px;
+  }
+
+  .phase-hint {
+    font-size: 0.75rem;
+    padding: 8px 12px;
+  }
+
+  .game-status {
+    font-size: 0.85rem;
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .lobby {
+    padding-top: 24px;
+    gap: 16px;
+  }
+
+  .join-row {
+    flex-direction: column;
+  }
+
+  .join-row .input {
+    letter-spacing: 2px;
+    padding: 12px 14px;
+  }
+
+  .lane {
+    min-width: 62px;
+    padding: 6px 8px;
+  }
+
+  .slot {
+    width: 44px;
+    height: 44px;
+  }
+
+  .slot .dice-face {
+    width: 30px !important;
+    height: 30px !important;
+    padding: 4px;
+  }
+
+  .turn-timer-container {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .timer-reserve-bar {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .lanes-container {
+    gap: 8px;
+  }
+
+  .dice-off-modal {
+    padding: 24px 16px;
+  }
+
+  .dice-off-dice {
+    transform: scale(0.6);
+  }
+
+  .dice-off-players {
+    gap: 8px;
+  }
+
+  .game-sidebar .dice-result .dice-face {
+    width: 48px !important;
+    height: 48px !important;
+  }
+}
+
 

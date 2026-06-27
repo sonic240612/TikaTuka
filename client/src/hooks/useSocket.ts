@@ -24,6 +24,7 @@ interface UseSocketReturn {
 
 export function useSocket(serverUrl: string): UseSocketReturn {
   const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
+  const prevUrlRef = useRef(serverUrl);
   const [connected, setConnected] = useState(false);
   const [roomId, setRoomId] = useState<string | null>(null);
   const [playerIndex, setPlayerIndex] = useState<number | null>(null);
@@ -34,12 +35,18 @@ export function useSocket(serverUrl: string): UseSocketReturn {
   const [diceOffResult, setDiceOffResult] = useState<DiceOffResult | null>(null);
 
   useEffect(() => {
-    setConnected(false);
-    setRoomId(null);
-    setPlayerIndex(null);
-    setGameState(null);
-    setError(null);
-    setRooms([]);
+    const isUrlChange = serverUrl !== prevUrlRef.current;
+    prevUrlRef.current = serverUrl;
+
+    if (isUrlChange) {
+      setConnected(false);
+      setRoomId(null);
+      setPlayerIndex(null);
+      setGameState(null);
+      setError(null);
+      setRooms([]);
+      setDiceOffResult(null);
+    }
 
     if (socketRef.current) {
       socketRef.current.disconnect();
@@ -60,12 +67,20 @@ export function useSocket(serverUrl: string): UseSocketReturn {
       setPlayerIndex(data.playerIndex);
       setGameState(data.gameState);
       setError(null);
-      if (data.diceOff) setDiceOffResult(data.diceOff);
+      if (data.diceOff) {
+        console.log("[diceOff] joined event has diceOff:", JSON.stringify(data.diceOff));
+        setDiceOffResult(data.diceOff);
+      } else {
+        console.log("[diceOff] joined event WITHOUT diceOff");
+      }
     });
 
     socket.on("opponent_joined", (data) => {
       setGameState(data.gameState);
-      if (data.diceOff) setDiceOffResult(data.diceOff);
+      if (data.diceOff) {
+        console.log("[diceOff] opponent_joined has diceOff:", JSON.stringify(data.diceOff));
+        setDiceOffResult(data.diceOff);
+      }
     });
 
     socket.on("match_found", (data) => {
@@ -73,7 +88,10 @@ export function useSocket(serverUrl: string): UseSocketReturn {
       setPlayerIndex(data.playerIndex);
       setGameState(data.gameState);
       setError(null);
-      if (data.diceOff) setDiceOffResult(data.diceOff);
+      if (data.diceOff) {
+        console.log("[diceOff] match_found has diceOff:", JSON.stringify(data.diceOff));
+        setDiceOffResult(data.diceOff);
+      }
     });
 
     socket.on("game_state", (data) => {

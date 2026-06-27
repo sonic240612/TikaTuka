@@ -16,6 +16,7 @@ export default function DiceOffScreen({
   myPlayerIndex,
   onComplete,
 }: DiceOffScreenProps) {
+  console.log("[diceOff] DiceOffScreen rendered", { myRoll, opponentRoll, firstPlayerIndex, myPlayerIndex });
   const [phase, setPhase] = useState<'rolling' | 'reveal' | 'result'>('rolling');
   const [myDisplay, setMyDisplay] = useState(1);
   const [oppDisplay, setOppDisplay] = useState(1);
@@ -68,7 +69,9 @@ export default function DiceOffScreen({
         <div className="dice-off-players">
           <div className={`dice-off-player ${phase === 'result' && iAmFirst ? 'winner' : ''}`}>
             <span className="dice-off-label">You</span>
-            <DiceFace value={myDisplay} size={80} type="normal" rolling={phase === 'rolling'} />
+            <div className="dice-off-dice">
+              <DiceFace value={myDisplay} size={80} type="normal" rolling={phase === 'rolling'} />
+            </div>
             {phase === 'result' && iAmFirst && <span className="dice-off-badge">First</span>}
           </div>
 
@@ -76,7 +79,9 @@ export default function DiceOffScreen({
 
           <div className={`dice-off-player ${phase === 'result' && !iAmFirst ? 'winner' : ''}`}>
             <span className="dice-off-label">Opponent</span>
-            <DiceFace value={oppDisplay} size={80} type="normal" rolling={phase === 'rolling'} />
+            <div className="dice-off-dice">
+              <DiceFace value={oppDisplay} size={80} type="normal" rolling={phase === 'rolling'} />
+            </div>
             {phase === 'result' && !iAmFirst && <span className="dice-off-badge">First</span>}
           </div>
         </div>

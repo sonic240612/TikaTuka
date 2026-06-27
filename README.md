@@ -1,14 +1,12 @@
 # Tik-a-Tuka
 
-A 1v1 web-based dice battle game with real-time multiplayer support.
+A 1v1 real-time dice battle game. Roll, place, counter, and outscore your opponent.
 
-- **Client**: React + TypeScript + Vite
+- **Client**: React 18 + TypeScript + Vite
 - **Server**: Node.js + Socket.IO
 - **Live**: https://tikatuka-one.vercel.app
 
-## How to Play
-
-### Quick Start (Local Dev)
+## Quick Start (Local Dev)
 
 ```bash
 # Install dependencies
@@ -24,22 +22,6 @@ cd client && npm run dev
 
 Open `http://localhost:5173` in two browser tabs to play against yourself.
 
-### Play with Friends (ngrok + Vercel)
-
-1. Start the server locally:
-   ```bash
-   cd server && npm run build && node dist/server/src/index.js
-   ```
-
-2. Expose it with ngrok:
-   ```bash
-   ngrok http 3001
-   ```
-
-3. Go to https://tikatuka-one.vercel.app
-4. Click **Server Settings** and paste the ngrok URL (e.g. `https://xxxx.ngrok-free.dev`)
-5. Share the link — anyone can join with the same server URL
-
 ## Game Rules
 
 > 한국어 규칙 문서는 [Tik-a-Tuka_Rules.md](./Tik-a-Tuka_Rules.md)를 참고하세요.
@@ -47,28 +29,49 @@ Open `http://localhost:5173` in two browser tabs to play against yourself.
 Tik-a-Tuka is a 2-player dice strategy game played on a board of 3 lanes per player.
 
 ### Board
-- Each player has 3 lanes, each with 3 dice slots
+- Each player has 3 lanes with 3 dice slots each
 - Lanes are scored independently at game end
 
 ### Turn Flow
-1. **Roll** — Roll a dice (1–6)
-2. **Place or Counter**:
-   - Place the dice in an empty slot on your board
-   - If the opponent has a matching dice value in the same lane index, you can **counter** (alggagi) instead — removes their dice and rewards you a shield dice
-   - You cannot place in a lane where the opponent has a matching dice (must counter there)
-3. **Reroll (optional)** — Once per game, reroll and choose old or new value
-4. **Shield Dice** — After a successful counter, place the shield dice on any empty slot on either board
+1. **Roll** — Dice rolls automatically when it's your turn
+2. **Place** — Place the dice in an empty slot on your board
+3. **Counter** — If the opponent has a matching dice value in the same lane, counter removes their dice and rewards you a shield dice
+4. **Reroll (optional)** — Once per game, reroll and keep the new or old value
+5. **Shield Dice** — After a successful counter, place the shield dice on any empty slot on either board
 
 ### Scoring
-- Each lane's score = sum of its dice values
+- Each lane score = sum of its dice values
 - Win a lane by having a higher score than your opponent in that lane
-- Win the game by winning more lanes (2 out of 3)
-- In case of a tie in lane wins, the player with the higher total score wins
+- Win the game by winning 2 out of 3 lanes (or total score if tied)
+
+## Features
+
+### Sound Effects
+- 7 procedural SFX via Web Audio API (dice roll, dice place, dice reroll, counter fire/hit, shield place, victory/defeat)
+- SFX ON/OFF toggle in game header
+
+### Background Music
+- Free jazz MP3 loops automatically during gameplay
+- BGM ON/OFF toggle and independent volume slider
+
+### Turn Timer
+- 15 seconds per turn
+- 60 seconds reserve per player
+- Overtime mode deducts from reserve when exhausted
+
+### Counter Animation
+- Flying dice with 720° rotation and cubic-bezier arc
+- Hit-effect radial flash at the destination lane
+- Dice-off screen to decide first player
+
+### Mobile Responsive
+- Responsive layout at 640px, 480px, and 360px breakpoints
+- Sidebar collapses below the board on small screens
 
 ## Architecture
 
 ```
-├── client/          React + Vite frontend (Socket.IO client)
+├── client/          React + Vite frontend
 ├── server/          Node.js + Socket.IO game server
 └── shared/          Shared TypeScript types and utilities
 ```
@@ -81,15 +84,18 @@ All game logic is **server-authoritative** — the server validates every action
 |------|---------|
 | `shared/types.ts` | Game state types, socket events, score utilities |
 | `server/src/game/GameEngine.ts` | Pure game logic (roll, place, counter, shield, scoring) |
-| `server/src/index.ts` | Socket.IO server, event handlers |
-| `server/src/rooms/RoomManager.ts` | Room creation, random matchmaking |
-| `client/src/components/GameBoard.tsx` | 3-lane board UI |
-| `client/src/components/DiceRoller.tsx` | Dice roll with CSS animation |
-| `client/src/components/Lobby.tsx` | Create/join room, server URL config |
+| `server/src/index.ts` | Socket.IO server, event handlers, turn timer |
+| `server/src/rooms/RoomManager.ts` | Room creation, matchmaking |
+| `client/src/components/GameBoard.tsx` | 3-lane board with counter animation |
+| `client/src/components/DiceRoller.tsx` | Dice display with CSS animation |
+| `client/src/components/TurnTimer.tsx` | Turn/reserve timer bar |
+| `client/src/hooks/useAudio.ts` | SFX + BGM control hook |
+| `client/src/utils/audio.ts` | Web Audio API sound synthesis + BGM playback |
 
 ## Deployment
 
-The client is deployed on **Vercel** (static site). The server runs locally with an **ngrok** tunnel — no cloud hosting costs.
+- **Client**: Vercel (static site) → https://tikatuka-one.vercel.app
+- **Server**: Render (Web Service) → https://tikatuka-server.onrender.com
 
 Server URL is configurable at runtime via the **Server Settings** panel in the lobby.
 
@@ -98,4 +104,5 @@ Server URL is configurable at runtime via the **Server Settings** panel in the l
 - **Frontend**: React 18, TypeScript, Vite
 - **Backend**: Node.js, Socket.IO
 - **Build**: Vite, TypeScript (project references)
-- **Deploy**: Vercel (client), ngrok (server tunnel)
+- **Audio**: Web Audio API (SFX), HTMLAudioElement (BGM)
+- **Deploy**: Vercel (client), Render (server)

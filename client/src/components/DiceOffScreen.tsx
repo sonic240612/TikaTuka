@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import DiceFace from './DiceFace';
 
 interface DiceOffScreenProps {
@@ -19,6 +19,8 @@ export default function DiceOffScreen({
   const [phase, setPhase] = useState<'rolling' | 'reveal' | 'result'>('rolling');
   const [myDisplay, setMyDisplay] = useState(1);
   const [oppDisplay, setOppDisplay] = useState(1);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   useEffect(() => {
     const rollInterval = setInterval(() => {
@@ -36,20 +38,16 @@ export default function DiceOffScreen({
         setPhase('result');
 
         const exitTimer = setTimeout(() => {
-          onComplete();
+          onCompleteRef.current();
         }, 2000);
-
-        return () => clearTimeout(exitTimer);
       }, 1200);
-
-      return () => clearTimeout(resultTimer);
     }, 1500);
 
     return () => {
       clearInterval(rollInterval);
       clearTimeout(revealTimer);
     };
-  }, [myRoll, opponentRoll, onComplete]);
+  }, [myRoll, opponentRoll]);
 
   const iAmFirst = myPlayerIndex === firstPlayerIndex;
 

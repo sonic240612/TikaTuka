@@ -192,7 +192,6 @@ io.on("connection", (socket) => {
     };
     socket.to(roomId).emit("dice_off_result", diceOffForHost);
 
-    startTurnTimer(roomId);
     emitRoomList();
 
     console.log(`[join_room] ${socket.id} -> ${roomId} as player ${playerIndex}`);
@@ -237,7 +236,6 @@ io.on("connection", (socket) => {
       };
       io.to(opponentSocketId).emit("dice_off_result", diceOffForHost);
 
-      startTurnTimer(result.roomId);
       console.log(`[join_random] matched ${socket.id} in ${result.roomId}`);
     } else {
       const result = roomManager.joinRandom(socket.id);

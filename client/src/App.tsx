@@ -7,7 +7,12 @@ import DiceRoller from "./components/DiceRoller.js";
 import ActionPanel from "./components/ActionPanel.js";
 import TurnTimer from "./components/TurnTimer.js";
 import DiceOffScreen from "./components/DiceOffScreen.js";
+import type { PlayerBoard, GameState } from "../../shared/types.js";
 import "./App.css";
+
+function countSlots(board: PlayerBoard): number {
+  return board.lanes.reduce((sum, lane) => sum + lane.slots.filter((s) => s !== null).length, 0);
+}
 
 export default function App() {
   const [serverUrl, setServerUrl] = useState(
@@ -83,22 +88,40 @@ export default function App() {
   const message = gameState?.message ?? "";
   const [delayedMessage, setDelayedMessage] = useState("");
   const prevPhaseRef = useRef("");
+  const prevGameStateRef = useRef<GameState | null>(null);
 
   useEffect(() => {
     if (!gameState) {
       prevPhaseRef.current = "";
+      prevGameStateRef.current = null;
       setDelayedMessage("");
       return;
     }
 
     const prevPhase = prevPhaseRef.current;
     const newPhase = gameState.phase;
+    const prevGS = prevGameStateRef.current;
+
+    if (prevPhase === "action" && playerIndex !== null && prevGS) {
+      const oppIdx = playerIndex === 0 ? 1 : 0;
+      if (countSlots(gameState.players[oppIdx].board) > countSlots(prevGS.players[oppIdx].board)) {
+        trigger("dice_place");
+      }
+      if (
+        countSlots(gameState.players[playerIndex].board) < countSlots(prevGS.players[playerIndex].board) &&
+        gameState.players[oppIdx].shieldDice
+      ) {
+        trigger("counter_fire");
+        setTimeout(() => trigger("counter_hit"), 400);
+      }
+    }
 
     if (prevPhase === "roll" && newPhase === "action") {
       trigger("dice_roll");
       setDelayedMessage("");
       const timer = setTimeout(() => setDelayedMessage(gameState.message), 800);
       prevPhaseRef.current = newPhase;
+      prevGameStateRef.current = gameState;
       return () => clearTimeout(timer);
     }
 
@@ -111,6 +134,7 @@ export default function App() {
     }
 
     prevPhaseRef.current = newPhase;
+    prevGameStateRef.current = gameState;
     setDelayedMessage(gameState.message);
   }, [gameState]);
 

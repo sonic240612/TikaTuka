@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import type { GameState, Lane, Slot, Dice, LaneScore } from "../../../shared/types.js";
 import { calculateBoardScores, totalScore, calculateLaneScore } from "../../../shared/types.js";
 import DiceFace from './DiceFace';
+import { playSound } from "../utils/audio.js";
 
 interface GameBoardProps {
   gameState: GameState;
@@ -162,6 +163,7 @@ export default function GameBoard({
     el.style.transform = `translate(${dx}px, ${dy}px) rotate(720deg) scale(0.85)`;
 
     const flyTimer = setTimeout(() => {
+      playSound("counter_hit");
       if (hitRef.current) {
         hitRef.current.style.left = `${flyingDice.toX}px`;
         hitRef.current.style.top = `${flyingDice.toY}px`;

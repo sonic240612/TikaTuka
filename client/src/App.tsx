@@ -1,5 +1,6 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import { useSocket } from "./hooks/useSocket.js";
+import { useAudio } from "./hooks/useAudio.js";
 import Lobby from "./components/Lobby.js";
 import GameBoard from "./components/GameBoard.js";
 import DiceRoller from "./components/DiceRoller.js";
@@ -94,10 +95,19 @@ export default function App() {
     const newPhase = gameState.phase;
 
     if (prevPhase === "roll" && newPhase === "action") {
+      trigger("dice_roll");
       setDelayedMessage("");
       const timer = setTimeout(() => setDelayedMessage(gameState.message), 800);
       prevPhaseRef.current = newPhase;
       return () => clearTimeout(timer);
+    }
+
+    if (prevPhase === "place_shield" && newPhase !== "place_shield") {
+      trigger("shield_place");
+    }
+
+    if (newPhase === "game_over") {
+      trigger(gameState.winner === playerIndex ? "victory" : "defeat");
     }
 
     prevPhaseRef.current = newPhase;
@@ -121,6 +131,8 @@ export default function App() {
   }, [gameState]);
 
   const showActionPanel = showRerollChoice || showRerollButton;
+
+  const { muted, toggle: toggleMute, trigger } = useAudio();
 
   return (
     <div className="app">
@@ -163,6 +175,9 @@ export default function App() {
                   ? "Your Turn"
                   : "Opponent's Turn"}
             </span>
+            <button className="btn-mute" onClick={toggleMute} title={muted ? "Unmute" : "Mute"}>
+              {muted ? "SFX OFF" : "SFX ON"}
+            </button>
           </div>
 
           {error && <div className="error-toast">{error}</div>}
@@ -185,12 +200,14 @@ export default function App() {
               isMyTurn={isMyTurn ?? false}
               currentRoll={gameState.currentRoll}
               counterLanes={counterLanes}
-              onPlace={(laneIndex) =>
-                socket?.emit("place_dice", { laneIndex })
-              }
-              onCounter={(laneIndex) =>
-                socket?.emit("counter_dice", { laneIndex })
-              }
+              onPlace={(laneIndex) => {
+                trigger("dice_place");
+                socket?.emit("place_dice", { laneIndex });
+              }}
+              onCounter={(laneIndex) => {
+                trigger("counter_fire");
+                socket?.emit("counter_dice", { laneIndex });
+              }}
               onPlaceShield={(laneIndex, targetPlayerIndex) =>
                 socket?.emit("place_shield", {
                   laneIndex,
@@ -215,7 +232,10 @@ export default function App() {
                     previousRoll={gameState.previousRoll}
                     isMyTurn={isMyTurn ?? false}
                     hasReroll={canReroll}
-                    onReroll={() => socket?.emit("reroll_dice")}
+                    onReroll={() => {
+                      trigger("dice_reroll");
+                      socket?.emit("reroll_dice");
+                    }}
                     onKeepRoll={() => socket?.emit("keep_roll")}
                     onUsePrevious={() => socket?.emit("use_previous")}
                   />

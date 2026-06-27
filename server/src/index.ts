@@ -304,6 +304,8 @@ io.on("connection", (socket) => {
         }, 500);
       } else if (result.state.currentPlayerIndex !== prevPlayerIndex) {
         startTurnTimer(room.id);
+      } else if (!turnTimers.has(room.id)) {
+        startTurnTimer(room.id);
       }
     }
   }

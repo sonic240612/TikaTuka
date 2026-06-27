@@ -45,8 +45,7 @@ const roomManager = new RoomManager();
 const rateLimiter = new RateLimiter(10, 1000);
 
 const turnTimers = new Map<string, {
-  turnTimeout: NodeJS.Timeout | null;
-  overtimeInterval: NodeJS.Timeout | null;
+  interval: NodeJS.Timeout | null;
   overtime: boolean;
   elapsed: number;
 }>();
@@ -54,8 +53,7 @@ const turnTimers = new Map<string, {
 function clearTurnTimer(roomId: string) {
   const timer = turnTimers.get(roomId);
   if (timer) {
-    if (timer.turnTimeout) clearTimeout(timer.turnTimeout);
-    if (timer.overtimeInterval) clearInterval(timer.overtimeInterval);
+    if (timer.interval) clearInterval(timer.interval);
     turnTimers.delete(roomId);
   }
 }
@@ -80,33 +78,41 @@ function emitGameState(roomId: string, gameState: GameState) {
   });
 }
 
-function handleOvertimeTick(roomId: string) {
+function handleTimerTick(roomId: string) {
   const room = roomManager.getRoom(roomId);
-  if (!room || !room.gameState || room.gameState.phase === "game_over") {
+  const timer = turnTimers.get(roomId);
+  if (!room || !room.gameState || room.gameState.phase === "game_over" || !timer) {
     clearTurnTimer(roomId);
     return;
   }
 
-  const depleted = roomManager.deductReserveTime(roomId, room.gameState.currentPlayerIndex, 1);
-  const timer = turnTimers.get(roomId);
-  if (timer) timer.elapsed++;
+  timer.elapsed++;
+
+  if (!timer.overtime && timer.elapsed >= TURN_TIME_LIMIT) {
+    timer.overtime = true;
+  }
+
+  if (timer.overtime) {
+    const depleted = roomManager.deductReserveTime(roomId, room.gameState.currentPlayerIndex, 1);
+
+    if (depleted) {
+      clearTurnTimer(roomId);
+      const winner = room.gameState.currentPlayerIndex === 0 ? 1 : 0;
+      room.gameState.phase = "game_over" as any;
+      room.gameState.winner = winner;
+      room.gameState.message = `Player ${room.gameState.currentPlayerIndex + 1} ran out of time!`;
+      emitGameState(roomId, room.gameState);
+      setTimeout(() => {
+        io.to(roomId).emit("game_over", {
+          winner,
+          gameState: room.gameState!,
+        });
+      }, 500);
+      return;
+    }
+  }
 
   io.to(roomId).emit("timer_update", getTimerState(roomId));
-
-  if (depleted) {
-    clearTurnTimer(roomId);
-    const winner = room.gameState.currentPlayerIndex === 0 ? 1 : 0;
-    room.gameState.phase = "game_over" as any;
-    room.gameState.winner = winner;
-    room.gameState.message = `Player ${room.gameState.currentPlayerIndex + 1} ran out of time!`;
-    emitGameState(roomId, room.gameState);
-    setTimeout(() => {
-      io.to(roomId).emit("game_over", {
-        winner,
-        gameState: room.gameState!,
-      });
-    }, 500);
-  }
 }
 
 function startTurnTimer(roomId: string) {
@@ -114,17 +120,14 @@ function startTurnTimer(roomId: string) {
   const room = roomManager.getRoom(roomId);
   if (!room || !room.gameState || room.gameState.phase === "game_over") return;
 
-  let elapsed = 0;
-  const timerEntry = { turnTimeout: null as NodeJS.Timeout | null, overtimeInterval: null as NodeJS.Timeout | null, overtime: false, elapsed: 0 };
+  const timerEntry = { interval: null as NodeJS.Timeout | null, overtime: false, elapsed: 0 };
   turnTimers.set(roomId, timerEntry);
 
-  timerEntry.turnTimeout = setTimeout(() => {
-    timerEntry.overtime = true;
-    handleOvertimeTick(roomId);
-    timerEntry.overtimeInterval = setInterval(() => {
-      handleOvertimeTick(roomId);
-    }, 1000);
-  }, TURN_TIME_LIMIT * 1000);
+  io.to(roomId).emit("timer_update", getTimerState(roomId));
+
+  timerEntry.interval = setInterval(() => {
+    handleTimerTick(roomId);
+  }, 1000);
 }
 
 setInterval(() => rateLimiter.sweep(), 30_000);
@@ -173,7 +176,6 @@ io.on("connection", (socket) => {
     });
 
     startTurnTimer(roomId);
-    io.to(roomId).emit("timer_update", getTimerState(roomId));
     emitRoomList();
 
     console.log(`[join_room] ${socket.id} -> ${roomId} as player ${playerIndex}`);
@@ -211,7 +213,6 @@ io.on("connection", (socket) => {
     });
 
     startTurnTimer(result.roomId);
-    io.to(result.roomId).emit("timer_update", getTimerState(result.roomId));
     console.log(`[join_random] matched ${socket.id} in ${result.roomId}`);
   });
 

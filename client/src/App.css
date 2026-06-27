@@ -252,6 +252,13 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
+  gap: 12px;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .room-code {
@@ -267,19 +274,34 @@ body {
   font-size: 1.1rem;
 }
 
-.btn-mute {
+.btn-mute,
+.btn-bgm {
   background: none;
-  border: none;
-  font-size: 1.2rem;
+  border: 1px solid var(--border-color, #444);
+  font-size: 0.75rem;
+  font-weight: 600;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 3px 8px;
   border-radius: var(--radius-sm);
-  transition: background 0.2s;
-  line-height: 1;
+  transition: background 0.2s, border-color 0.2s;
+  line-height: 1.4;
+  color: var(--text-muted);
+  white-space: nowrap;
+  letter-spacing: 0.3px;
 }
 
-.btn-mute:hover {
+.btn-mute:hover,
+.btn-bgm:hover {
   background: var(--bg-tertiary);
+  border-color: var(--accent, #888);
+  color: var(--accent, #ccc);
+}
+
+.bgm-volume {
+  width: 60px;
+  height: 4px;
+  accent-color: var(--accent, #888);
+  cursor: pointer;
 }
 
 .game-status {

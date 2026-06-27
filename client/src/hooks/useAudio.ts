@@ -1,12 +1,22 @@
 import { useState, useCallback, useEffect } from "react";
-import { playSound, toggleMute } from "../utils/audio.js";
+import {
+  playSound,
+  toggleMute,
+  isBGMOn,
+  toggleBGM,
+  setBGMVolume,
+  getBGMVolume,
+  startBGM,
+  stopBGM,
+} from "../utils/audio.js";
 
 export function useAudio() {
   const [muted, setMuted] = useState(false);
+  const [bgmOn, setBgmOn] = useState(isBGMOn());
+  const [bgmVolume, setBgmVolumeState] = useState(getBGMVolume());
 
   useEffect(() => {
     const handler = () => {
-      // init AudioContext on first user interaction
       playSound("dice_roll");
     };
     document.addEventListener("click", handler, { once: true });
@@ -22,5 +32,30 @@ export function useAudio() {
     setMuted(m);
   }, []);
 
-  return { muted, toggle, trigger };
+  const toggleBgm = useCallback(() => {
+    const on = toggleBGM();
+    setBgmOn(on);
+  }, []);
+
+  const changeBGMVolume = useCallback((v: number) => {
+    setBGMVolume(v);
+    setBgmVolumeState(v);
+  }, []);
+
+  const syncBGM = useCallback(() => {
+    setBgmOn(isBGMOn());
+  }, []);
+
+  return {
+    muted,
+    toggle,
+    trigger,
+    bgmOn,
+    toggleBgm,
+    bgmVolume,
+    changeBGMVolume,
+    syncBGM,
+    startBGM,
+    stopBGM,
+  };
 }

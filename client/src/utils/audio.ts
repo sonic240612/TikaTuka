@@ -136,3 +136,62 @@ export function toggleMute(): boolean {
   _muted = !_muted;
   return _muted;
 }
+
+let _bgmOn = false;
+let _bgmVolume = 0.05;
+let _bgmAudio: HTMLAudioElement | null = null;
+
+function _ensureBgmAudio() {
+  if (!_bgmAudio) {
+    _bgmAudio = new Audio("/bgm.mp3");
+    _bgmAudio.loop = true;
+    _bgmAudio.volume = _bgmVolume;
+  }
+  return _bgmAudio;
+}
+
+let _bgmStarted = false;
+
+export function startBGM() {
+  if (_bgmOn) return;
+  _bgmOn = true;
+  const audio = _ensureBgmAudio();
+  audio.volume = _bgmVolume;
+  if (!_bgmStarted) {
+    audio.currentTime = 0;
+    _bgmStarted = true;
+  }
+  audio.play().catch(() => {
+    _bgmOn = false;
+    const handler = () => {
+      audio.play().then(() => { _bgmOn = true; }).catch(() => {});
+      document.removeEventListener("click", handler);
+    };
+    document.addEventListener("click", handler);
+  });
+}
+
+export function stopBGM() {
+  if (_bgmAudio) {
+    _bgmAudio.pause();
+  }
+  _bgmOn = false;
+}
+
+export function isBGMOn(): boolean { return _bgmOn; }
+
+export function setBGMVolume(v: number) {
+  _bgmVolume = v;
+  if (_bgmAudio) _bgmAudio.volume = v;
+}
+
+export function getBGMVolume(): number { return _bgmVolume; }
+
+export function toggleBGM(): boolean {
+  if (_bgmOn) {
+    stopBGM();
+  } else {
+    startBGM();
+  }
+  return _bgmOn;
+}

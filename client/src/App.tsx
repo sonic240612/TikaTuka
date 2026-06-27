@@ -132,7 +132,19 @@ export default function App() {
 
   const showActionPanel = showRerollChoice || showRerollButton;
 
-  const { muted, toggle: toggleMute, trigger } = useAudio();
+  const { muted, toggle: toggleMute, trigger, bgmOn, toggleBgm, bgmVolume, changeBGMVolume, syncBGM, startBGM, stopBGM } = useAudio();
+  const bgmStartedRef = useRef(false);
+
+  useEffect(() => {
+    if (gameState && !bgmStartedRef.current) {
+      startBGM();
+      syncBGM();
+      bgmStartedRef.current = true;
+    }
+    if (!gameState) {
+      bgmStartedRef.current = false;
+    }
+  }, [gameState]);
 
   return (
     <div className="app">
@@ -175,9 +187,24 @@ export default function App() {
                   ? "Your Turn"
                   : "Opponent's Turn"}
             </span>
-            <button className="btn-mute" onClick={toggleMute} title={muted ? "Unmute" : "Mute"}>
-              {muted ? "SFX OFF" : "SFX ON"}
-            </button>
+            <div className="header-controls">
+              <button className="btn-mute" onClick={toggleMute} title={muted ? "Unmute" : "Mute"}>
+                {muted ? "SFX OFF" : "SFX ON"}
+              </button>
+              <button className="btn-bgm" onClick={toggleBgm} title={bgmOn ? "Stop BGM" : "Play BGM"}>
+                {bgmOn ? "BGM ON" : "BGM OFF"}
+              </button>
+              <input
+                type="range"
+                className="bgm-volume"
+                min="0"
+                max="1"
+                step="0.05"
+                value={bgmVolume}
+                onChange={(e) => changeBGMVolume(parseFloat(e.target.value))}
+                title="BGM Volume"
+              />
+            </div>
           </div>
 
           {error && <div className="error-toast">{error}</div>}

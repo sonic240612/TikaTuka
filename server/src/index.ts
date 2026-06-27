@@ -17,7 +17,6 @@ import type {
   ServerToClientEvents,
   GameState,
   TimerState,
-  DiceOffResult,
 } from "../../shared/types.js";
 import type { ActionResult } from "./game/GameEngine.js";
 
@@ -166,31 +165,28 @@ io.on("connection", (socket) => {
     const playerIndex = roomManager.getPlayerIndex(roomId, socket.id);
     const room = roomManager.getRoom(roomId)!;
 
+    const opponentIndex = playerIndex === 0 ? 1 : 0;
+
     socket.emit("joined", {
       roomId,
       playerIndex,
       gameState: room.gameState!,
+      diceOff: {
+        myRoll: playerIndex === 0 ? diceOff.myRoll : diceOff.opponentRoll,
+        opponentRoll: playerIndex === 0 ? diceOff.opponentRoll : diceOff.myRoll,
+        firstPlayerIndex: diceOff.firstPlayerIndex,
+      },
     });
 
     socket.to(roomId).emit("opponent_joined", {
       roomId,
       gameState: room.gameState!,
+      diceOff: {
+        myRoll: opponentIndex === 0 ? diceOff.myRoll : diceOff.opponentRoll,
+        opponentRoll: opponentIndex === 0 ? diceOff.opponentRoll : diceOff.myRoll,
+        firstPlayerIndex: diceOff.firstPlayerIndex,
+      },
     });
-
-    const diceOffForJoiner: DiceOffResult = {
-      myRoll: playerIndex === 0 ? diceOff.myRoll : diceOff.opponentRoll,
-      opponentRoll: playerIndex === 0 ? diceOff.opponentRoll : diceOff.myRoll,
-      firstPlayerIndex: diceOff.firstPlayerIndex,
-    };
-    socket.emit("dice_off_result", diceOffForJoiner);
-
-    const opponentIndex = playerIndex === 0 ? 1 : 0;
-    const diceOffForHost: DiceOffResult = {
-      myRoll: opponentIndex === 0 ? diceOff.myRoll : diceOff.opponentRoll,
-      opponentRoll: opponentIndex === 0 ? diceOff.opponentRoll : diceOff.myRoll,
-      firstPlayerIndex: diceOff.firstPlayerIndex,
-    };
-    socket.to(roomId).emit("dice_off_result", diceOffForHost);
 
     emitRoomList();
 
@@ -209,32 +205,29 @@ io.on("connection", (socket) => {
 
       socket.join(result.roomId);
 
+      const opponentSocketId = result.gameState.players[0].id;
+
       socket.emit("match_found", {
         roomId: result.roomId,
         playerIndex: result.playerIndex,
         gameState: result.gameState,
+        diceOff: {
+          myRoll: result.playerIndex === 0 ? diceOff.myRoll : diceOff.opponentRoll,
+          opponentRoll: result.playerIndex === 0 ? diceOff.opponentRoll : diceOff.myRoll,
+          firstPlayerIndex: diceOff.firstPlayerIndex,
+        },
       });
 
-      const opponentSocketId = result.gameState.players[0].id;
       io.to(opponentSocketId).emit("match_found", {
         roomId: result.roomId,
         playerIndex: 0,
         gameState: result.gameState,
+        diceOff: {
+          myRoll: diceOff.myRoll,
+          opponentRoll: diceOff.opponentRoll,
+          firstPlayerIndex: diceOff.firstPlayerIndex,
+        },
       });
-
-      const diceOffForJoiner: DiceOffResult = {
-        myRoll: result.playerIndex === 0 ? diceOff.myRoll : diceOff.opponentRoll,
-        opponentRoll: result.playerIndex === 0 ? diceOff.opponentRoll : diceOff.myRoll,
-        firstPlayerIndex: diceOff.firstPlayerIndex,
-      };
-      socket.emit("dice_off_result", diceOffForJoiner);
-
-      const diceOffForHost: DiceOffResult = {
-        myRoll: 0 === 0 ? diceOff.myRoll : diceOff.opponentRoll,
-        opponentRoll: 0 === 0 ? diceOff.opponentRoll : diceOff.myRoll,
-        firstPlayerIndex: diceOff.firstPlayerIndex,
-      };
-      io.to(opponentSocketId).emit("dice_off_result", diceOffForHost);
 
       console.log(`[join_random] matched ${socket.id} in ${result.roomId}`);
     } else {

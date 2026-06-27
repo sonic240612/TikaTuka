@@ -73,16 +73,15 @@ export interface DiceOffResult {
 }
 
 export interface ServerToClientEvents {
-  joined: (data: { roomId: string; playerIndex: number; gameState: GameState | null }) => void;
-  opponent_joined: (data: { roomId: string; gameState: GameState }) => void;
+  joined: (data: { roomId: string; playerIndex: number; gameState: GameState | null; diceOff?: DiceOffResult }) => void;
+  opponent_joined: (data: { roomId: string; gameState: GameState; diceOff?: DiceOffResult }) => void;
   game_state: (data: { gameState: GameState; timer: TimerState }) => void;
   game_over: (data: { winner: number; gameState: GameState }) => void;
   error: (data: { message: string }) => void;
   room_list: (data: { rooms: RoomInfo[] }) => void;
-  match_found: (data: { roomId: string; playerIndex: number; gameState: GameState }) => void;
+  match_found: (data: { roomId: string; playerIndex: number; gameState: GameState; diceOff?: DiceOffResult }) => void;
   match_cancelled: () => void;
   timer_update: (data: TimerState) => void;
-  dice_off_result: (data: DiceOffResult) => void;
 }
 
 export interface ClientToServerEvents {

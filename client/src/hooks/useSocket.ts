@@ -60,10 +60,12 @@ export function useSocket(serverUrl: string): UseSocketReturn {
       setPlayerIndex(data.playerIndex);
       setGameState(data.gameState);
       setError(null);
+      if (data.diceOff) setDiceOffResult(data.diceOff);
     });
 
     socket.on("opponent_joined", (data) => {
       setGameState(data.gameState);
+      if (data.diceOff) setDiceOffResult(data.diceOff);
     });
 
     socket.on("match_found", (data) => {
@@ -71,6 +73,7 @@ export function useSocket(serverUrl: string): UseSocketReturn {
       setPlayerIndex(data.playerIndex);
       setGameState(data.gameState);
       setError(null);
+      if (data.diceOff) setDiceOffResult(data.diceOff);
     });
 
     socket.on("game_state", (data) => {
@@ -80,10 +83,6 @@ export function useSocket(serverUrl: string): UseSocketReturn {
 
     socket.on("timer_update", (data) => {
       setTimer(data);
-    });
-
-    socket.on("dice_off_result", (data) => {
-      setDiceOffResult(data);
     });
 
     socket.on("game_over", (data) => {

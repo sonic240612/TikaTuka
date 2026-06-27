@@ -286,19 +286,24 @@ io.on("connection", (socket) => {
     }
 
     if (result.state) {
-      emitGameState(room.id, result.state);
       if (result.state.phase === "game_over" && result.state.winner !== null) {
         clearTurnTimer(room.id);
+        emitGameState(room.id, result.state);
         setTimeout(() => {
           io.to(room.id).emit("game_over", {
             winner: result.state.winner!,
             gameState: result.state,
           });
         }, 500);
-      } else if (result.state.currentPlayerIndex !== prevPlayerIndex) {
-        startTurnTimer(room.id);
-      } else if (!turnTimers.has(room.id)) {
-        startTurnTimer(room.id);
+      } else {
+        if (result.state.currentPlayerIndex !== prevPlayerIndex) {
+          startTurnTimer(room.id);
+        } else if (result.state.phase === "roll") {
+          startTurnTimer(room.id);
+        } else if (!turnTimers.has(room.id)) {
+          startTurnTimer(room.id);
+        }
+        emitGameState(room.id, result.state);
       }
     }
   }

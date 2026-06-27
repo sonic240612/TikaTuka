@@ -129,7 +129,8 @@ function generateRandomShieldDice(): Dice {
 export function createInitialGameState(
   roomId: string,
   player0Id: string,
-  player1Id: string
+  player1Id: string,
+  firstPlayerIndex = 0
 ): GameState {
   return {
     roomId,
@@ -137,7 +138,7 @@ export function createInitialGameState(
       { id: player0Id, board: createEmptyBoard(), shieldDice: null },
       { id: player1Id, board: createEmptyBoard(), shieldDice: null },
     ],
-    currentPlayerIndex: 0,
+    currentPlayerIndex: firstPlayerIndex,
     phase: GamePhase.ROLL,
     currentRoll: null,
     previousRoll: null,
@@ -147,7 +148,7 @@ export function createInitialGameState(
     laneWins: [0, 0],
     rerollUsed: [false, false],
     turnCount: 0,
-    message: "Player 1's turn. Roll the dice!",
+    message: firstPlayerIndex === 0 ? "Player 1's turn. Roll the dice!" : "Player 2's turn. Roll the dice!",
   };
 }
 

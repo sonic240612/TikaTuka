@@ -1,5 +1,19 @@
-import { type GameState, type RoomInfo } from "../../../shared/types.js";
+import { type GameState, type RoomInfo, type DiceOffResult } from "../../../shared/types.js";
 import { createInitialGameState, handleRoll, handleReroll, handlePlaceDice, handleCounter, handlePlaceShield, handlePass, type ActionResult } from "../game/GameEngine.js";
+
+export function generateDiceOff(): DiceOffResult {
+  let roll0: number, roll1: number;
+  do {
+    roll0 = Math.floor(Math.random() * 6) + 1;
+    roll1 = Math.floor(Math.random() * 6) + 1;
+  } while (roll0 === roll1);
+
+  return {
+    myRoll: roll0,
+    opponentRoll: roll1,
+    firstPlayerIndex: roll0 > roll1 ? 0 : 1,
+  };
+}
 
 function generateRoomId(): string {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -42,7 +56,7 @@ export class RoomManager {
     return roomId;
   }
 
-  joinRoom(roomId: string, playerSocketId: string): { ok: boolean; error?: string } {
+  joinRoom(roomId: string, playerSocketId: string, firstPlayerIndex = 0): { ok: boolean; error?: string } {
     const room = this.rooms.get(roomId);
     if (!room) return { ok: false, error: "Room not found" };
     if (room.playerSockets.length >= 2) return { ok: false, error: "Room is full" };
@@ -51,7 +65,8 @@ export class RoomManager {
     room.gameState = createInitialGameState(
       roomId,
       room.playerSockets[0],
-      room.playerSockets[1]
+      room.playerSockets[1],
+      firstPlayerIndex
     );
 
     return { ok: true };
@@ -61,7 +76,11 @@ export class RoomManager {
     return this.randomQueue.some((p) => p.id === socketId);
   }
 
-  joinRandom(playerSocketId: string): { roomId: string; playerIndex: number; gameState: GameState | null } | null {
+  hasQueuedOpponent(): boolean {
+    return this.randomQueue.length > 0;
+  }
+
+  joinRandom(playerSocketId: string, firstPlayerIndex?: number): { roomId: string; playerIndex: number; gameState: GameState | null } | null {
     if (this.isInRandomQueue(playerSocketId)) {
       return null;
     }
@@ -73,7 +92,8 @@ export class RoomManager {
       room.gameState = createInitialGameState(
         room.id,
         opponent.id,
-        playerSocketId
+        playerSocketId,
+        firstPlayerIndex
       );
       return { roomId: room.id, playerIndex: 1, gameState: room.gameState };
     }

@@ -6,6 +6,7 @@ import type {
   GameState,
   RoomInfo,
   TimerState,
+  DiceOffResult,
 } from "../../../shared/types.js";
 
 interface UseSocketReturn {
@@ -17,6 +18,8 @@ interface UseSocketReturn {
   error: string | null;
   rooms: RoomInfo[];
   timer: TimerState;
+  diceOffResult: DiceOffResult | null;
+  clearDiceOff: () => void;
 }
 
 export function useSocket(serverUrl: string): UseSocketReturn {
@@ -28,6 +31,7 @@ export function useSocket(serverUrl: string): UseSocketReturn {
   const [error, setError] = useState<string | null>(null);
   const [rooms, setRooms] = useState<RoomInfo[]>([]);
   const [timer, setTimer] = useState<TimerState>({ turnTimeLeft: 15, reserveTime: [60, 60], overtime: false });
+  const [diceOffResult, setDiceOffResult] = useState<DiceOffResult | null>(null);
 
   useEffect(() => {
     setConnected(false);
@@ -78,6 +82,10 @@ export function useSocket(serverUrl: string): UseSocketReturn {
       setTimer(data);
     });
 
+    socket.on("dice_off_result", (data) => {
+      setDiceOffResult(data);
+    });
+
     socket.on("game_over", (data) => {
       setGameState(data.gameState);
     });
@@ -95,6 +103,10 @@ export function useSocket(serverUrl: string): UseSocketReturn {
     };
   }, [serverUrl]);
 
+  function clearDiceOff() {
+    setDiceOffResult(null);
+  }
+
   return {
     socket: socketRef.current,
     connected,
@@ -104,5 +116,7 @@ export function useSocket(serverUrl: string): UseSocketReturn {
     error,
     rooms,
     timer,
+    diceOffResult,
+    clearDiceOff,
   };
 }

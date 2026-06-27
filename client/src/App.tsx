@@ -5,6 +5,7 @@ import GameBoard from "./components/GameBoard.js";
 import DiceRoller from "./components/DiceRoller.js";
 import ActionPanel from "./components/ActionPanel.js";
 import TurnTimer from "./components/TurnTimer.js";
+import DiceOffScreen from "./components/DiceOffScreen.js";
 import "./App.css";
 
 export default function App() {
@@ -22,6 +23,8 @@ export default function App() {
     error,
     rooms,
     timer,
+    diceOffResult,
+    clearDiceOff,
   } = useSocket(serverUrl);
 
   const availableRooms = useMemo(
@@ -102,10 +105,10 @@ export default function App() {
   }, [gameState]);
 
   useEffect(() => {
-    if (canRoll && isMyTurn && socket) {
+    if (canRoll && isMyTurn && socket && !diceOffResult) {
       socket.emit("roll_dice");
     }
-  }, [canRoll, isMyTurn, socket]);
+  }, [canRoll, isMyTurn, socket, diceOffResult]);
 
   const showRerollChoice =
     gameState?.phase === "reroll_choice";
@@ -140,6 +143,15 @@ export default function App() {
         </div>
       )}
 
+      {diceOffResult && (
+        <DiceOffScreen
+          myRoll={diceOffResult.myRoll}
+          opponentRoll={diceOffResult.opponentRoll}
+          firstPlayerIndex={diceOffResult.firstPlayerIndex}
+          myPlayerIndex={playerIndex ?? 0}
+          onComplete={clearDiceOff}
+        />
+      )}
       {roomId && gameState && (
         <div className="game-container">
           <div className="game-header">

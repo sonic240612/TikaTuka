@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
 import { createServer } from "http";
-import { RoomManager } from "./rooms/RoomManager.js";
+import { RoomManager, generateDiceOff } from "./rooms/RoomManager.js";
 import { RateLimiter } from "./utils/RateLimiter.js";
 import {
   handleRoll,
@@ -17,6 +17,7 @@ import type {
   ServerToClientEvents,
   GameState,
   TimerState,
+  DiceOffResult,
 } from "../../shared/types.js";
 import type { ActionResult } from "./game/GameEngine.js";
 
@@ -154,7 +155,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("join_room", ({ roomId }) => {
-    const result = roomManager.joinRoom(roomId, socket.id);
+    const diceOff = generateDiceOff();
+    const result = roomManager.joinRoom(roomId, socket.id, diceOff.firstPlayerIndex);
     if (!result.ok) {
       socket.emit("error", { message: result.error! });
       return;
@@ -175,6 +177,21 @@ io.on("connection", (socket) => {
       gameState: room.gameState!,
     });
 
+    const diceOffForJoiner: DiceOffResult = {
+      myRoll: playerIndex === 0 ? diceOff.myRoll : diceOff.opponentRoll,
+      opponentRoll: playerIndex === 0 ? diceOff.opponentRoll : diceOff.myRoll,
+      firstPlayerIndex: diceOff.firstPlayerIndex,
+    };
+    socket.emit("dice_off_result", diceOffForJoiner);
+
+    const opponentIndex = playerIndex === 0 ? 1 : 0;
+    const diceOffForHost: DiceOffResult = {
+      myRoll: opponentIndex === 0 ? diceOff.myRoll : diceOff.opponentRoll,
+      opponentRoll: opponentIndex === 0 ? diceOff.opponentRoll : diceOff.myRoll,
+      firstPlayerIndex: diceOff.firstPlayerIndex,
+    };
+    socket.to(roomId).emit("dice_off_result", diceOffForHost);
+
     startTurnTimer(roomId);
     emitRoomList();
 
@@ -182,38 +199,59 @@ io.on("connection", (socket) => {
   });
 
   socket.on("join_random", () => {
-    const result = roomManager.joinRandom(socket.id);
-    if (!result) {
+    if (roomManager.isInRandomQueue(socket.id)) {
       return;
     }
 
-    socket.join(result.roomId);
+    if (roomManager.hasQueuedOpponent()) {
+      const diceOff = generateDiceOff();
+      const result = roomManager.joinRandom(socket.id, diceOff.firstPlayerIndex);
+      if (!result || !result.gameState) return;
 
-    if (!result.gameState) {
+      socket.join(result.roomId);
+
+      socket.emit("match_found", {
+        roomId: result.roomId,
+        playerIndex: result.playerIndex,
+        gameState: result.gameState,
+      });
+
+      const opponentSocketId = result.gameState.players[0].id;
+      io.to(opponentSocketId).emit("match_found", {
+        roomId: result.roomId,
+        playerIndex: 0,
+        gameState: result.gameState,
+      });
+
+      const diceOffForJoiner: DiceOffResult = {
+        myRoll: result.playerIndex === 0 ? diceOff.myRoll : diceOff.opponentRoll,
+        opponentRoll: result.playerIndex === 0 ? diceOff.opponentRoll : diceOff.myRoll,
+        firstPlayerIndex: diceOff.firstPlayerIndex,
+      };
+      socket.emit("dice_off_result", diceOffForJoiner);
+
+      const diceOffForHost: DiceOffResult = {
+        myRoll: 0 === 0 ? diceOff.myRoll : diceOff.opponentRoll,
+        opponentRoll: 0 === 0 ? diceOff.opponentRoll : diceOff.myRoll,
+        firstPlayerIndex: diceOff.firstPlayerIndex,
+      };
+      io.to(opponentSocketId).emit("dice_off_result", diceOffForHost);
+
+      startTurnTimer(result.roomId);
+      console.log(`[join_random] matched ${socket.id} in ${result.roomId}`);
+    } else {
+      const result = roomManager.joinRandom(socket.id);
+      if (!result) return;
+
+      socket.join(result.roomId);
+
       socket.emit("joined", {
         roomId: result.roomId,
         playerIndex: result.playerIndex,
         gameState: null,
       });
       console.log(`[join_random] ${socket.id} -> room ${result.roomId} (waiting, P${result.playerIndex + 1})`);
-      return;
     }
-
-    socket.emit("match_found", {
-      roomId: result.roomId,
-      playerIndex: result.playerIndex,
-      gameState: result.gameState,
-    });
-
-    const opponentSocketId = result.gameState.players[0].id;
-    io.to(opponentSocketId).emit("match_found", {
-      roomId: result.roomId,
-      playerIndex: 0,
-      gameState: result.gameState,
-    });
-
-    startTurnTimer(result.roomId);
-    console.log(`[join_random] matched ${socket.id} in ${result.roomId}`);
   });
 
   socket.on("cancel_random", () => {

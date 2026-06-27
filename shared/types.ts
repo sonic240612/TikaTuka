@@ -66,6 +66,12 @@ export interface TimerState {
   overtime: boolean;
 }
 
+export interface DiceOffResult {
+  myRoll: number;
+  opponentRoll: number;
+  firstPlayerIndex: number;
+}
+
 export interface ServerToClientEvents {
   joined: (data: { roomId: string; playerIndex: number; gameState: GameState | null }) => void;
   opponent_joined: (data: { roomId: string; gameState: GameState }) => void;
@@ -76,6 +82,7 @@ export interface ServerToClientEvents {
   match_found: (data: { roomId: string; playerIndex: number; gameState: GameState }) => void;
   match_cancelled: () => void;
   timer_update: (data: TimerState) => void;
+  dice_off_result: (data: DiceOffResult) => void;
 }
 
 export interface ClientToServerEvents {

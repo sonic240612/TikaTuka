@@ -101,6 +101,12 @@ export default function App() {
     setDelayedMessage(gameState.message);
   }, [gameState]);
 
+  useEffect(() => {
+    if (canRoll && isMyTurn && socket) {
+      socket.emit("roll_dice");
+    }
+  }, [canRoll, isMyTurn, socket]);
+
   const showRerollChoice =
     gameState?.phase === "reroll_choice";
   const showRerollButton =
@@ -186,8 +192,6 @@ export default function App() {
                 <DiceRoller
                   dice={gameState.currentRoll}
                   shieldDice={pendingShieldDice}
-                  canRoll={canRoll}
-                  onRoll={() => socket?.emit("roll_dice")}
                   isMyTurn={isMyTurn ?? false}
                   isShieldPhase={gameState.phase === "place_shield"}
                 />

@@ -5,8 +5,6 @@ import DiceFace from './DiceFace';
 interface DiceRollerProps {
   dice: Dice | null;
   shieldDice: Dice | null;
-  canRoll: boolean;
-  onRoll: () => void;
   isMyTurn: boolean;
   isShieldPhase: boolean;
 }
@@ -14,8 +12,6 @@ interface DiceRollerProps {
 export default function DiceRoller({
   dice,
   shieldDice,
-  canRoll,
-  onRoll,
   isMyTurn,
   isShieldPhase,
 }: DiceRollerProps) {
@@ -25,17 +21,12 @@ export default function DiceRoller({
 
   const displayDice = dice ?? shieldDice;
 
-  function handleRoll() {
-    setRolling(true);
-    onRoll();
-  }
-
   useEffect(() => {
-    if (!isMyTurn && !rolling && dice !== null && prevDiceRef.current === null) {
+    if (!rolling && dice !== null && prevDiceRef.current === null) {
       setRolling(true);
     }
     prevDiceRef.current = dice;
-  }, [dice, isMyTurn, rolling]);
+  }, [dice, rolling]);
 
   useEffect(() => {
     if (!rolling) return;
@@ -67,13 +58,6 @@ export default function DiceRoller({
           </div>
         ) : (
           <div className="dice-empty">?</div>
-        )}
-      </div>
-      <div className="dice-actions">
-        {canRoll && isMyTurn && (
-          <button className="btn btn-primary" onClick={handleRoll} disabled={rolling}>
-            {rolling ? 'Rolling...' : 'Roll Dice'}
-          </button>
         )}
       </div>
     </div>

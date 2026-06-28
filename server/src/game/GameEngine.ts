@@ -53,14 +53,9 @@ function applyCounter(
   diceValue: number
 ): void {
   const lane = opponent.board.lanes[laneIndex];
-  let removed = false;
-  const remaining = lane.slots.filter((s) => {
-    if (!removed && s !== null && s.type === DiceType.NORMAL && s.value === diceValue) {
-      removed = true;
-      return false;
-    }
-    return true;
-  });
+  const remaining = lane.slots.filter((s) =>
+    !(s !== null && s.type === DiceType.NORMAL && s.value === diceValue)
+  );
   const result: [Slot, Slot, Slot] = [null, null, null];
   for (let i = 0; i < remaining.length && i < 3; i++) {
     result[i] = remaining[i];
